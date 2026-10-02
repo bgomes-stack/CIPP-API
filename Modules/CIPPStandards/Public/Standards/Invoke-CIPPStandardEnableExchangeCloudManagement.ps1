@@ -46,7 +46,8 @@ function Invoke-CIPPStandardEnableExchangeCloudManagement {
         return $true
     }
 
-    $DesiredState = [System.Convert]::ToBoolean($Settings.state)
+    $StateValue   = $Settings.state.value ?? $Settings.state
+    $DesiredState = [System.Convert]::ToBoolean($StateValue)
     $StateText = if ($DesiredState) { 'Cloud' } else { 'On-Premises' }
 
     try {
@@ -116,6 +117,5 @@ function Invoke-CIPPStandardEnableExchangeCloudManagement {
         $filtered = $MailboxesToUpdate | Select-Object -Property UserPrincipalName, IsExchangeCloudManaged, RecipientTypeDetails, ExternalDirectoryObjectId
         $stateReport = if ($StateIsCorrect -eq $true) { $true } else { $filtered }
         Set-CIPPStandardsCompareField -FieldName 'standards.EnableExchangeCloudManagement' -FieldValue $stateReport -TenantFilter $Tenant
-        Add-CIPPBPAField -FieldName 'EnableExchangeCloudManagement' -FieldValue $filtered -StoreAs json -Tenant $Tenant
     }
 }

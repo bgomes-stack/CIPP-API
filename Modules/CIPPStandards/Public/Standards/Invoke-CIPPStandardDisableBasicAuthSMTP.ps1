@@ -50,7 +50,7 @@ function Invoke-CIPPStandardDisableBasicAuthSMTP {
     ##$Rerun -Type Standard -Tenant $Tenant -Settings $Settings 'DisableBasicAuthSMTP'
 
     try {
-        $CurrentInfo = New-ExoRequest -tenantid $Tenant -cmdlet 'Get-TransportConfig'
+        $CurrentInfo = New-CIPPDbRequest -TenantFilter $Tenant -Type 'ExoTransportConfig' | Select-Object -First 1
         $SMTPusers = New-CippDbRequest -TenantFilter $Tenant -Type 'CASMailbox' | Where-Object { ($_.SmtpClientAuthenticationDisabled -eq $false) }
     } catch {
         $ErrorMessage = Get-NormalizedError -Message $_.Exception.Message
@@ -134,12 +134,6 @@ function Invoke-CIPPStandardDisableBasicAuthSMTP {
 
             Set-CIPPStandardsCompareField -FieldName 'standards.DisableBasicAuthSMTP' -CurrentValue $CurrentValue -ExpectedValue $ExpectedValue -TenantFilter $Tenant
 
-            if ($CurrentInfo.SmtpClientAuthenticationDisabled -and $SMTPusers.Count -eq 0) {
-                Add-CIPPBPAField -FieldName 'DisableBasicAuthSMTP' -FieldValue $CurrentInfo.SmtpClientAuthenticationDisabled -StoreAs bool -Tenant $tenant
-            } else {
-                $Logs = $LogMessage | Select-Object @{n = 'Message'; e = { $_ } }
-                Add-CIPPBPAField -FieldName 'DisableBasicAuthSMTP' -FieldValue $Logs -StoreAs json -Tenant $tenant
-            }
         }
     }
 }
